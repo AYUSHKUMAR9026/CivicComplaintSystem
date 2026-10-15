@@ -42,6 +42,7 @@ import { SubmitComplaintPage } from './pages/SubmitComplaintPage'
 import { ComplaintDetailPage } from './pages/ComplaintDetailPage'
 import { PublicFeedPage } from './pages/PublicFeedPage'
 import { AdminDashboard } from './pages/AdminDashboard'
+import { DetectionDemoPage } from './pages/DetectionDemoPage'
 
 // Layout wrapper with header
 function MainLayout() {
@@ -152,6 +153,11 @@ function App() {
           <Route path="/feed" element={
             <ProtectedRoute allowedRoles={['citizen']}>
               <PublicFeedPage />
+            </ProtectedRoute>
+          } />
+          <Route path="/detect" element={
+            <ProtectedRoute>
+              <DetectionDemoPage />
             </ProtectedRoute>
           } />
           <Route path="/complaint/:id" element={

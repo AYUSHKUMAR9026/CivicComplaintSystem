@@ -119,9 +119,33 @@ export const complaintAPI = {
   update: (id, data) => api.put(`/complaints/${id}`, data),
   upvote: (id) => api.post(`/complaints/${id}/upvote`),
   removeUpvote: (id) => api.delete(`/complaints/${id}/upvote`),
+  categories: () => api.get('/complaints/categories'),
   searchLocations: (query) => api.get('/complaints/locations/search', { params: { q: query, limit: 10 } }),
   getApplicant: (id) => api.get(`/complaints/${id}/applicant`),
   delete: (id) => api.delete(`/complaints/${id}`),
+}
+
+export const detectAPI = {
+  health: () => api.get('/detect/health'),
+  scan: (file, confidence = 0.4) => {
+    const formData = new FormData()
+    formData.append('file', file)
+    formData.append('confidence', String(confidence))
+    return api.post('/detect/scan', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+      timeout: 60000,
+    })
+  },
+  road: (file, confidence = 0.4) => {
+    const formData = new FormData()
+    formData.append('file', file)
+    formData.append('confidence', String(confidence))
+    // Hosted inference can cold start; allow more than the 30s client default.
+    return api.post('/detect/road', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+      timeout: 60000,
+    })
+  },
 }
 
 export const geocodeAPI = {

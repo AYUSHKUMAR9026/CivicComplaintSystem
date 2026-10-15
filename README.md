@@ -28,6 +28,10 @@ Admin/department works on it → Status changes → Citizen notified → Resolve
 
 ## Tech Stack
 
+Phase 1 computer vision setup is available in [ai_service/README.md](ai_service/README.md).
+It runs pretrained YOLO11 nano independently of the complaint application; custom
+civic defect detection requires future training.
+
 | Layer | Technology |
 |-------|------------|
 | Frontend | React 18, Tailwind CSS, Vite |

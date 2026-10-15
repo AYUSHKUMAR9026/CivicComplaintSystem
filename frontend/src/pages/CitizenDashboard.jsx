@@ -5,6 +5,7 @@ import { complaintAPI } from '../services/api'
 import { Button, Card, CardContent, StatusBadge, EmptyState, LoadingState, Skeleton } from '../components/UI'
 import { Plus, FileText, Clock, MapPin, ChevronRight, RefreshCw, Filter, X, ThumbsUp, Loader, CheckCircle2, XCircle, AlertCircle, Sparkles } from 'lucide-react'
 import { formatRelativeTime, getStatusConfig, classNames, truncate, formatErrorMessage } from '../utils/helpers'
+import { LiveScanner } from '../components/LiveScanner'
 
 const STATUS_ORDER = ['pending', 'working', 'completed']
 
@@ -95,6 +96,9 @@ export function CitizenDashboard() {
         </Link>
       </div>
 
+
+
+      <LiveScanner existingComplaints={complaints} onComplaintFiled={fetchComplaints} />
       {/* Filters */}
       <Card className="mb-6">
         <CardContent className="p-4">

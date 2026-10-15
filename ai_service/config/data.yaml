@@ -1,0 +1,10 @@
+# Template only: these directories will exist after successful preparation.
+# No path field: Ultralytics resolves these relative to this YAML file.
+train: ../datasets/prepared/images/train
+val: ../datasets/prepared/images/val
+test: ../datasets/prepared/images/test
+names:
+  0: pothole
+  1: garbage
+  2: overflowing_bin
+nc: 3

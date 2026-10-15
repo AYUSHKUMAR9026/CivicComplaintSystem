@@ -53,3 +53,21 @@ docker-compose.override.yml
 *.pem
 .vercel
 .netlify
+
+# Isolated computer vision experiments
+.venv/
+ai_service/.python/
+ai_service/.cache/
+ai_service/.ultralytics/
+ai_service/runs/
+ai_service/datasets/**
+!ai_service/datasets/**/
+!ai_service/datasets/**/.gitkeep
+!ai_service/datasets/**/README.md
+*.pt
+*.pth
+*.onnx
+*.engine
+*.part
+*.tmp
+pytest-cache-files-*/
