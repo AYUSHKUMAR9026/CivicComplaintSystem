@@ -27,8 +27,30 @@ ROBOFLOW_MODEL_ID = os.getenv("ROBOFLOW_MODEL_ID", "potholes-scbcq/1")
 # garbage-d6vgh/1 was chosen over garbage-jciga/1: the latter scored 0.54 on a
 # plain road photo, higher than most of its true positives.
 ROBOFLOW_GARBAGE_MODEL_ID = os.getenv("ROBOFLOW_GARBAGE_MODEL_ID", "garbage-d6vgh/1")
+# Context models. Neither a person nor a vehicle is a civic defect, so these are
+# drawn for the citizen but carry no civic_category and can never be auto-filed.
+# The human model also feeds the person gate in inference/scan.py, where it
+# supplements the local COCO model: on the 20-image sample set it fired on every
+# people photo and on no road or pothole photo.
+ROBOFLOW_HUMAN_MODEL_ID = os.getenv("ROBOFLOW_HUMAN_MODEL_ID", "humans-v0nq1/1")
+ROBOFLOW_CAR_MODEL_ID = os.getenv("ROBOFLOW_CAR_MODEL_ID", "cars-blxk2/2")
+# Two extra pothole opinions alongside potholes-scbcq/1. Measured on the sample
+# set: scbcq alone missed montreal and small; these two cover them. Each hosted
+# model is a separate billed call per frame, so the active set is configurable.
+ROBOFLOW_POTHOLE_KW_MODEL_ID = os.getenv("ROBOFLOW_POTHOLE_KW_MODEL_ID", "kuwait-potholes/1")
+ROBOFLOW_POTHOLE_ALT_MODEL_ID = os.getenv(
+    "ROBOFLOW_POTHOLE_ALT_MODEL_ID", "potholes-detection-j3w8s/1"
+)
 # Hosted road-damage model scores are low on close-up photos; see inference/roboflow_detector.py.
 ROBOFLOW_CONFIDENCE = float(os.getenv("ROBOFLOW_CONFIDENCE", "0.40"))
+
+# Kinds /detect/scan fans out to. Every entry costs one hosted call per frame,
+# so trim this to cut spend; the names must exist in inference/roboflow_detector.SPECS.
+SCAN_KINDS = tuple(
+    k.strip() for k in os.getenv(
+        "ROBOFLOW_SCAN_KINDS", "road,garbage,human,car,pothole_kw,pothole_alt"
+    ).split(",") if k.strip()
+)
 
 
 def roboflow_api_key() -> str:

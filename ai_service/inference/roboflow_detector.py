@@ -8,8 +8,22 @@ Two hosted models are used, each with its own class vocabulary:
   the dataset author never named them. Detections are therefore reported as
   garbage with the raw subtype id preserved, and no label is invented.
 
+Four further models widen the scan to the objects a street scene actually
+contains. Each publishes its own vocabulary, read off the hosted API rather
+than assumed:
+
+* human (humans-v0nq1/1) emits the single unnamed class "0".
+* car (cars-blxk2/2) emits a mix of "vehicle" and the bare digit "9".
+* pothole_kw (kuwait-potholes/1) emits one class whose published name is the
+  dataset export string "pot-pot - v1 2024-07-10 6-48am".
+* pothole_alt (potholes-detection-j3w8s/1) emits "pothole".
+
+A single-purpose model's class code carries no information beyond "the thing
+this model detects", so each is labelled from its spec rather than its code.
+
 civic_category is the only field the complaint flow acts on. It is set solely
-for unambiguous findings, so cracks are reported but never auto-filed.
+for unambiguous findings, so cracks, people and vehicles are reported but never
+auto-filed: a pedestrian or a parked car is not a civic defect.
 """
 from __future__ import annotations
 
@@ -22,9 +36,13 @@ from inference_sdk import InferenceConfiguration, InferenceHTTPClient
 
 from ai_service.config.settings import (
     ROBOFLOW_API_URL,
+    ROBOFLOW_CAR_MODEL_ID,
     ROBOFLOW_CONFIDENCE,
     ROBOFLOW_GARBAGE_MODEL_ID,
+    ROBOFLOW_HUMAN_MODEL_ID,
     ROBOFLOW_MODEL_ID,
+    ROBOFLOW_POTHOLE_ALT_MODEL_ID,
+    ROBOFLOW_POTHOLE_KW_MODEL_ID,
     roboflow_api_key,
 )
 
@@ -67,6 +85,30 @@ def garbage_category(code: str) -> str:
     return "garbage"
 
 
+def describe_human_class(code: str) -> str:
+    """The model publishes one unnamed class, so the code adds nothing."""
+    return "Person"
+
+
+def describe_vehicle_class(code: str) -> str:
+    """Classes arrive as both "vehicle" and the bare digit "9"; both mean vehicle."""
+    return "Vehicle"
+
+
+def describe_pothole_class(code: str) -> str:
+    """Single-class pothole models, one of which publishes a dataset export string."""
+    return "Pothole"
+
+
+def context_category(code: str) -> None:
+    """People and vehicles are drawn for context and never become complaints."""
+    return None
+
+
+def pothole_category(code: str) -> str:
+    return "pothole"
+
+
 @dataclass(frozen=True)
 class ModelSpec:
     key: str
@@ -96,7 +138,51 @@ GARBAGE_SPEC = ModelSpec(
     label=describe_garbage_class,
     category=garbage_category,
 )
-SPECS = {ROAD_SPEC.key: ROAD_SPEC, GARBAGE_SPEC.key: GARBAGE_SPEC}
+HUMAN_SPEC = ModelSpec(
+    key="human",
+    model_id=ROBOFLOW_HUMAN_MODEL_ID,
+    scope=(
+        "Human detection model with one unnamed class (0). People are context, "
+        "never a complaint; these boxes also gate garbage false positives."
+    ),
+    label=describe_human_class,
+    category=context_category,
+)
+CAR_SPEC = ModelSpec(
+    key="car",
+    model_id=ROBOFLOW_CAR_MODEL_ID,
+    scope=(
+        "Vehicle detection model publishing both 'vehicle' and the digit '9'. "
+        "A vehicle is context: this model cannot tell legal parking from illegal."
+    ),
+    label=describe_vehicle_class,
+    category=context_category,
+)
+POTHOLE_KW_SPEC = ModelSpec(
+    key="pothole_kw",
+    model_id=ROBOFLOW_POTHOLE_KW_MODEL_ID,
+    scope=(
+        "Single-class pothole model. Its published class name is a dataset "
+        "export string, so the label comes from the spec. Measured to fire on "
+        "two garbage photos in the sample set, so it is a second opinion only."
+    ),
+    label=describe_pothole_class,
+    category=pothole_category,
+)
+POTHOLE_ALT_SPEC = ModelSpec(
+    key="pothole_alt",
+    model_id=ROBOFLOW_POTHOLE_ALT_MODEL_ID,
+    scope=(
+        "Single-class pothole model with the broadest sample-set coverage. It "
+        "also fired on two people photos, both below the auto-file floor."
+    ),
+    label=describe_pothole_class,
+    category=pothole_category,
+)
+SPECS = {
+    spec.key: spec
+    for spec in (ROAD_SPEC, GARBAGE_SPEC, HUMAN_SPEC, CAR_SPEC, POTHOLE_KW_SPEC, POTHOLE_ALT_SPEC)
+}
 
 
 class RoboflowDetector:

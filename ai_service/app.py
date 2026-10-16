@@ -5,9 +5,10 @@ from ai_service.config.settings import (
     ROBOFLOW_CONFIDENCE,
     ROBOFLOW_GARBAGE_MODEL_ID,
     ROBOFLOW_MODEL_ID,
+    SCAN_KINDS,
     WEIGHTS,
 )
-from ai_service.inference.roboflow_detector import RoboflowDetector, RoboflowError
+from ai_service.inference.roboflow_detector import SPECS, RoboflowDetector, RoboflowError
 from ai_service.inference.scan import CivicScanner
 
 import cv2
@@ -31,7 +32,11 @@ async def lifespan(app: FastAPI):
     # the local COCO endpoint stays usable; /detect/road then reports why.
     try:
         app.state.roboflow = RoboflowDetector(kind="road")
-        app.state.scanner = CivicScanner(confidence=ROBOFLOW_CONFIDENCE)
+        # Share the already-loaded COCO model so garbage boxes on people
+        # can be suppressed without loading YOLO twice.
+        app.state.scanner = CivicScanner(
+            confidence=ROBOFLOW_CONFIDENCE, person_detector=app.state.detector
+        )
         app.state.roboflow_error = None
     except (RoboflowError, ValueError) as exc:
         app.state.roboflow = None
@@ -74,6 +79,12 @@ def health():
             "default_confidence": ROBOFLOW_CONFIDENCE,
             "error": app.state.roboflow_error,
         },
+        # Every model /detect/scan fans out to, so a caller can see which
+        # vocabularies a scan response can contain.
+        "scan_models": {
+            kind: {"model_id": SPECS[kind].model_id, "scope": SPECS[kind].scope}
+            for kind in SCAN_KINDS if kind in SPECS
+        },
     }
 
 
@@ -114,7 +125,7 @@ async def detect_road(file: UploadFile = File(...), confidence: float = Form(def
 
 @app.post("/detect/scan")
 async def detect_scan(file: UploadFile = File(...), confidence: float = Form(default=ROBOFLOW_CONFIDENCE)):
-    """Run the road and garbage models over one frame and merge the findings."""
+    """Run every configured model over one frame and merge the findings."""
     if app.state.scanner is None:
         raise HTTPException(503, f"Hosted models unavailable: {app.state.roboflow_error}")
     if not 0 < confidence <= 1:
@@ -123,7 +134,7 @@ async def detect_scan(file: UploadFile = File(...), confidence: float = Form(def
     scanner = app.state.scanner
     if confidence != scanner.confidence:
         try:
-            scanner = CivicScanner(confidence=confidence)
+            scanner = CivicScanner(confidence=confidence, person_detector=app.state.detector)
         except RoboflowError as exc:
             raise HTTPException(503, str(exc)) from exc
     try:
