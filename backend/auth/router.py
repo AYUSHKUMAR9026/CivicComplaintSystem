@@ -1,4 +1,5 @@
 from datetime import timedelta
+from sqlalchemy import or_
 from sqlalchemy.orm import Session
 from sqlalchemy import or_
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -29,7 +30,9 @@ async def register(
     db: Session = Depends(get_db)
 ):
     """Register a new user (citizen or admin)"""
-    # Check if user exists
+    # Check if user exists. Phone is optional, and comparing it to None builds
+    # "phone IS NULL", which matches every seeded department account and fails a
+    # brand-new email, so only match on a phone the caller actually supplied.
     identifiers = [User.email == user_data.email]
     if user_data.phone:
         identifiers.append(User.phone == user_data.phone)
