@@ -1,0 +1,17 @@
+# Python 3.11. Install CPU torch/torchvision first (see README).
+ultralytics==8.3.221
+torch==2.9.0
+torchvision==0.24.0
+opencv-python==4.12.0.88
+numpy==2.2.6
+fastapi==0.119.0
+uvicorn==0.38.0
+python-multipart==0.0.20
+pytest==8.4.2
+httpx==0.28.1
+# Direct dependencies of the dataset preparation tools (also used by Ultralytics).
+Pillow>=11.3.0,<13
+PyYAML>=6.0.3,<7
+# Hosted Roboflow inference (serverless API). Key is read from the root .env.
+inference-sdk>=1.5.0,<2
+python-dotenv>=1.0.0

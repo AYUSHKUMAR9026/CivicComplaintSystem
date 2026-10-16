@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "seed": 42,
+  "near_duplicate_hamming": 6,
+  "sources": [
+    {
+      "id": "replace_with_source_id",
+      "root": "../datasets/raw/replace_with_source_id",
+      "name": "REQUIRED: original dataset title",
+      "url": "REQUIRED: original dataset/version URL",
+      "license": "REQUIRED: license identifier or full terms",
+      "license_url": "REQUIRED: URL of applicable license terms",
+      "attribution": "REQUIRED: original creator and required attribution text",
+      "license_files": [],
+      "data_yaml": "data.yaml",
+      "class_names": {"0": "trash", "1": "pothole", "2": "overflowing-bin"},
+      "class_map": {"0": "garbage", "1": "pothole", "2": "overflowing_bin"},
+      "pairs": [
+        {"images": "train/images", "labels": "train/labels"},
+        {"images": "valid/images", "labels": "valid/labels"},
+        {"images": "test/images", "labels": "test/labels"}
+      ],
+      "allow_empty_labels": false,
+      "grouping": {"mode": "whole_source"}
+    }
+  ]
+}

@@ -1,5 +1,8 @@
+import os
 from datetime import datetime
+from pathlib import Path
 from typing import List, Optional
+from uuid import uuid4
 from sqlalchemy.orm import Session
 from sqlalchemy import desc, nullslast
 from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Form, BackgroundTasks
@@ -25,6 +28,35 @@ import logging
 logger = logging.getLogger("civic.complaint")
 
 router = APIRouter(prefix="/api/complaints", tags=["complaints"])
+
+UPLOAD_DIR = os.getenv("UPLOAD_DIR", "./uploads")
+MAX_EVIDENCE_BYTES = int(os.getenv("MAX_FILE_SIZE", str(10 * 1024 * 1024)))
+ALLOWED_EVIDENCE_SUFFIXES = {".jpg", ".jpeg", ".png", ".webp", ".gif", ".bmp"}
+
+
+async def save_evidence_file(file: UploadFile) -> Optional[str]:
+    """Write one uploaded image to disk and return its public URL.
+
+    The original filename is never used as a path: it is attacker-controlled and
+    could traverse directories or collide between citizens.
+    """
+    data = await file.read(MAX_EVIDENCE_BYTES + 1)
+    if not data or len(data) > MAX_EVIDENCE_BYTES:
+        logger.warning(f"Rejected evidence upload (size {len(data)} bytes)")
+        return None
+    suffix = Path(file.filename or "").suffix.lower()
+    if suffix not in ALLOWED_EVIDENCE_SUFFIXES:
+        suffix = ".jpg"
+    name = f"{datetime.utcnow():%Y%m%d}_{uuid4().hex}{suffix}"
+    directory = Path(UPLOAD_DIR)
+    try:
+        directory.mkdir(parents=True, exist_ok=True)
+        (directory / name).write_bytes(data)
+    except OSError as exc:
+        logger.error(f"Could not store evidence file: {exc}")
+        return None
+    return f"/uploads/{name}"
+
 
 
 def _attach_user_voted_to_complaints(complaints: List[Complaint], user: Optional[User], db: Session) -> None:
@@ -137,12 +169,13 @@ async def create_complaint(
     if not category:
         raise NotFoundException("Category not found or inactive")
     
-    # Handle evidence uploads (mock - in production upload to S3/cloud storage)
+    # Persist evidence images to UPLOAD_DIR (served at /uploads by main.py)
     evidence_urls = []
     for file in evidence_files:
         if file.content_type and file.content_type.startswith("image/"):
-            # Mock URL - replace with actual upload
-            evidence_urls.append(f"/uploads/{file.filename}")
+            stored = await save_evidence_file(file)
+            if stored:
+                evidence_urls.append(stored)
     
     # Get citizen profile
     citizen = db.query(Citizen).filter(Citizen.user_id == current_user.id).first()
@@ -326,6 +359,24 @@ async def list_public_complaints(
         page=page,
         page_size=page_size
     )
+
+
+@router.get("/categories", response_model=List[CategoryResponse])
+async def list_citizen_categories(
+    current_user = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
+):
+    """Active categories for any signed-in user.
+
+    The admin list is role-restricted, so the live scanner needs this to resolve
+    a detected class to a real category id instead of a hardcoded one.
+    """
+    # Excludes stray "pot_1234" rows while keeping the real "pothole" category:
+    # autoescape makes the underscore literal instead of a LIKE wildcard.
+    return db.query(Category).filter(
+        Category.is_active == True,
+        ~Category.name.startswith('pot_', autoescape=True)
+    ).order_by(Category.id).all()
 
 
 @router.get("/{complaint_id}", response_model=ComplaintResponse)

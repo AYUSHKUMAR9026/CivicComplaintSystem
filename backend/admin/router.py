@@ -362,7 +362,12 @@ async def list_categories(
     db: Session = Depends(get_db)
 ):
     """List all categories"""
-    return db.query(Category).filter(Category.is_active == True, ~Category.name.like('pot_%')).order_by(Category.id).all()
+    # autoescape treats the underscore literally; a bare 'pot_%' LIKE pattern
+    # also matched the real "pothole" category, hiding it from this list.
+    return db.query(Category).filter(
+        Category.is_active == True,
+        ~Category.name.startswith('pot_', autoescape=True)
+    ).order_by(Category.id).all()
 
 
 @router.put("/categories/{category_id}", response_model=CategoryResponse)

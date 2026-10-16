@@ -12,6 +12,7 @@ import {
   Menu,
   X,
   Sparkles,
+  ScanLine,
 } from 'lucide-react'
 import { classNames, truncate } from '../utils/helpers'
 import { Logo } from './LogoMark'
@@ -21,11 +22,16 @@ const NAV_ITEMS_CITIZEN = [
   { path: '/dashboard', label: 'My Complaints', icon: FileText },
   { path: '/submit', label: 'New Complaint', icon: MapPin },
   { path: '/feed', label: 'Public Feed', icon: FolderKanban },
+  { path: '/detect', label: 'Detect Damage', icon: ScanLine },
 ]
 
-const NAV_ITEMS_ADMIN = []
+const NAV_ITEMS_ADMIN = [
+  { path: '/detect', label: 'Detect Damage', icon: ScanLine },
+]
 
-const NAV_ITEMS_DEPARTMENT = []
+const NAV_ITEMS_DEPARTMENT = [
+  { path: '/detect', label: 'Detect Damage', icon: ScanLine },
+]
 
 export function Header() {
   const { user, logout, isAuthenticated, isAdmin, isDepartment, isCitizen } = useAuth()

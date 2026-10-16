@@ -12,6 +12,7 @@ from auth.router import router as auth_router
 from complaint.router import router as complaint_router
 from admin.router import router as admin_router
 from geocode.router import router as geocode_router
+from detect.router import router as detect_router
 
 
 @asynccontextmanager
@@ -55,6 +56,7 @@ app.include_router(auth_router)
 app.include_router(complaint_router)
 app.include_router(admin_router)
 app.include_router(geocode_router)
+app.include_router(detect_router)
 
 
 # Health check
