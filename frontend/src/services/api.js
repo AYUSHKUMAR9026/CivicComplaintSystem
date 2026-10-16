@@ -118,8 +118,10 @@ export const authAPI = {
 }
 
 export const complaintAPI = {
-  create: (formData) => api.post('/complaints', formData, {
-    headers: { 'Content-Type': 'multipart/form-data' }
+  // `config` lets callers pass onUploadProgress so evidence uploads can show a bar.
+  create: (formData, config = {}) => api.post('/complaints', formData, {
+    ...config,
+    headers: { 'Content-Type': 'multipart/form-data', ...(config.headers || {}) }
   }),
   list: (params) => api.get('/complaints', { params }),
   listPublic: (params) => api.get('/complaints/public', { params }),

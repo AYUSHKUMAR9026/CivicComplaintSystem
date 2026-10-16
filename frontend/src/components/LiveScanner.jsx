@@ -3,7 +3,7 @@ import {
   Camera, CameraOff, Video, ScanLine, MapPin, AlertTriangle,
   CheckCircle2, X, Loader, ShieldCheck,
 } from 'lucide-react'
-import { Card, CardContent, Badge, Alert } from './UI'
+import { Card, CardContent, Badge, Alert, ProgressBar } from './UI'
 import { detectAPI, complaintAPI, geocodeAPI } from '../services/api'
 import { formatErrorMessage } from '../utils/helpers'
 
@@ -18,6 +18,24 @@ const DEDUP_METERS = 50         // skip if the citizen already reported it here
 const SESSION_CAP = 5           // hard ceiling per scanning session
 const COUNTDOWN_SECONDS = 8     // cancellable window before submit
 const FRAME_WIDTH = 640
+// An uploaded clip may have been recorded anywhere, so its load state is
+// tracked separately from the camera's.
+const MAX_VIDEO_BYTES = 200 * 1024 * 1024
+const VIDEO_LOAD_TIMEOUT_MS = 20000
+
+// HTMLMediaElement.error codes, which are otherwise invisible to the citizen.
+const VIDEO_ERROR_MESSAGES = {
+  1: 'Loading the video was aborted.',
+  2: 'A network error interrupted the video while it was loading.',
+  3: 'This video could not be decoded - the codec is likely unsupported. Try an MP4 (H.264) file.',
+  4: 'This video format is not supported by your browser. Try an MP4 (H.264) file.',
+}
+
+function formatBytes(bytes) {
+  if (!bytes) return ''
+  const mb = bytes / (1024 * 1024)
+  return mb >= 1 ? `${mb.toFixed(1)} MB` : `${Math.round(bytes / 1024)} KB`
+}
 
 const CATEGORY_LABELS = { pothole: 'Pothole / Road Damage', garbage: 'Garbage / Waste' }
 
@@ -49,6 +67,8 @@ export function LiveScanner({ existingComplaints = [], onComplaintFiled }) {
   const canvasRef = useRef(null)
   const streamRef = useRef(null)
   const videoUrlRef = useRef(null)
+  const videoLoadTimerRef = useRef(null)
+  const videoStatusRef = useRef('idle')
   const timerRef = useRef(null)
   const streakRef = useRef({ category: null, count: 0 })
   const cooldownRef = useRef({})
@@ -61,6 +81,10 @@ export function LiveScanner({ existingComplaints = [], onComplaintFiled }) {
   const [scanning, setScanning] = useState(false)
   const [mode, setMode] = useState('camera')
   const [videoSrc, setVideoSrc] = useState(null)
+  const [videoFile, setVideoFile] = useState(null)
+  const [videoStatus, setVideoStatus] = useState('idle')  // idle | loading | ready | error
+  const [videoProgress, setVideoProgress] = useState(null)
+  const [uploadProgress, setUploadProgress] = useState(null)
   const [result, setResult] = useState(null)
   const [error, setError] = useState('')
   const [notice, setNotice] = useState('')
@@ -82,6 +106,8 @@ export function LiveScanner({ existingComplaints = [], onComplaintFiled }) {
     setPendingImageUrl(url)
     return () => URL.revokeObjectURL(url)
   }, [pending])
+
+  useEffect(() => { videoStatusRef.current = videoStatus }, [videoStatus])
 
   // Categories come from the database so detected classes map to real ids.
   useEffect(() => {
@@ -135,6 +161,7 @@ export function LiveScanner({ existingComplaints = [], onComplaintFiled }) {
     if (timerRef.current) clearInterval(timerRef.current)
     streamRef.current?.getTracks().forEach((track) => track.stop())
     if (videoUrlRef.current) URL.revokeObjectURL(videoUrlRef.current)
+    if (videoLoadTimerRef.current) clearTimeout(videoLoadTimerRef.current)
   }, [])
 
   const startCamera = useCallback(async () => {
@@ -168,25 +195,97 @@ export function LiveScanner({ existingComplaints = [], onComplaintFiled }) {
   const startVideoFile = useCallback((file) => {
     if (!file) return
     setError('')
+    setNotice('')
+
+    // Some browsers report an empty type for less common containers, so only
+    // reject what is positively known not to be a video.
+    if (file.type && !file.type.startsWith('video/')) {
+      setVideoStatus('error')
+      setError(`"${file.name}" is not a video file (${file.type || 'unknown type'}).`)
+      return
+    }
+    if (file.size > MAX_VIDEO_BYTES) {
+      setVideoStatus('error')
+      setError(
+        `"${file.name}" is ${formatBytes(file.size)}. Videos must be under ${formatBytes(MAX_VIDEO_BYTES)} - ` +
+        'trim the clip or record at a lower resolution.'
+      )
+      return
+    }
+
     stop()
     requestLocation()
     if (videoUrlRef.current) URL.revokeObjectURL(videoUrlRef.current)
     const url = URL.createObjectURL(file)
     videoUrlRef.current = url
+    setVideoFile({ name: file.name, size: file.size })
     setVideoSrc(url)
+    setVideoStatus('loading')
+    setVideoProgress(0)
     setMode('video')
     setActive(true)
     setScanning(true)
+
+    // A clip that never reaches a playable state would otherwise just sit there.
+    if (videoLoadTimerRef.current) clearTimeout(videoLoadTimerRef.current)
+    videoLoadTimerRef.current = setTimeout(() => {
+      if (videoStatusRef.current !== 'loading') return
+      setError(`"${file.name}" did not become playable within ${VIDEO_LOAD_TIMEOUT_MS / 1000}s. The file may be corrupt or use an unsupported codec.`)
+      setVideoStatus('error')
+      setVideoProgress(null)
+    }, VIDEO_LOAD_TIMEOUT_MS)
   }, [requestLocation, stop])
 
-  useEffect(() => {
-    if (active && mode === 'video' && videoSrc) {
-      videoRef.current?.play().catch((err) => {
-        setError(`Could not play the video: ${err.message}`)
-        setScanning(false)
-      })
+  const clearVideoLoadTimer = useCallback(() => {
+    if (videoLoadTimerRef.current) {
+      clearTimeout(videoLoadTimerRef.current)
+      videoLoadTimerRef.current = null
     }
-  }, [active, mode, videoSrc])
+  }, [])
+
+  // Buffered-ahead fraction is the only real progress signal a <video> exposes.
+  const handleVideoProgress = useCallback(() => {
+    const video = videoRef.current
+    if (!video || mode !== 'video') return
+    const { duration, buffered } = video
+    if (!duration || !Number.isFinite(duration) || !buffered.length) return
+    setVideoProgress(Math.min(100, (buffered.end(buffered.length - 1) / duration) * 100))
+  }, [mode])
+
+  const handleVideoReady = useCallback(async () => {
+    if (mode !== 'video') return
+    clearVideoLoadTimer()
+    setVideoProgress(100)
+    setVideoStatus('ready')
+    try {
+      await videoRef.current?.play()
+    } catch (err) {
+      // Autoplay refusal is recoverable - the element has its own controls.
+      setNotice(`Press play to start scanning this video (${err.message}).`)
+    }
+  }, [clearVideoLoadTimer, mode])
+
+  const handleVideoError = useCallback(() => {
+    if (mode !== 'video') return
+    clearVideoLoadTimer()
+    const code = videoRef.current?.error?.code
+    setVideoStatus('error')
+    setVideoProgress(null)
+    setError(VIDEO_ERROR_MESSAGES[code] || 'This video could not be loaded.')
+    stop()
+  }, [clearVideoLoadTimer, mode, stop])
+
+  const discardVideo = useCallback(() => {
+    stop()
+    clearVideoLoadTimer()
+    if (videoUrlRef.current) URL.revokeObjectURL(videoUrlRef.current)
+    videoUrlRef.current = null
+    setVideoSrc(null)
+    setVideoFile(null)
+    setVideoStatus('idle')
+    setVideoProgress(null)
+    setMode('camera')
+  }, [clearVideoLoadTimer, stop])
 
   const captureFrame = useCallback(() => new Promise((resolve) => {
     const video = videoRef.current
@@ -223,7 +322,12 @@ export function LiveScanner({ existingComplaints = [], onComplaintFiled }) {
       formData.append('latitude', String(draft.coords.latitude))
       formData.append('longitude', String(draft.coords.longitude))
       formData.append('evidence_files', draft.blob, `scan-${Date.now()}.jpg`)
-      const response = await complaintAPI.create(formData)
+      setUploadProgress(0)
+      const response = await complaintAPI.create(formData, {
+        onUploadProgress: (event) => {
+          setUploadProgress(event.total ? Math.round((event.loaded / event.total) * 100) : null)
+        },
+      })
       cooldownRef.current[draft.category] = Date.now() + COOLDOWN_MS
       setFiled((prev) => [{ id: response.data.id, category: draft.category, at: new Date() }, ...prev])
       setNotice(`Complaint #${response.data.id} filed for ${CATEGORY_LABELS[draft.category]}.`)
@@ -232,6 +336,7 @@ export function LiveScanner({ existingComplaints = [], onComplaintFiled }) {
       setError(formatErrorMessage(err, 'Could not file the complaint automatically.'))
     } finally {
       filingRef.current = false
+      setUploadProgress(null)
       setFiling(false)
       setPending(null)
       setCountdown(0)
@@ -313,9 +418,11 @@ export function LiveScanner({ existingComplaints = [], onComplaintFiled }) {
 
   useEffect(() => {
     if (!active || !scanning) return undefined
+    // Scanning a video before it is playable only captures blank frames.
+    if (mode === 'video' && videoStatus !== 'ready') return undefined
     timerRef.current = setInterval(scanOnce, SCAN_INTERVAL_MS)
     return () => { if (timerRef.current) clearInterval(timerRef.current) }
-  }, [active, scanning, scanOnce])
+  }, [active, mode, scanning, scanOnce, videoStatus])
 
   const detections = result?.detections ?? []
   const imageWidth = result?.image?.width
@@ -388,7 +495,12 @@ export function LiveScanner({ existingComplaints = [], onComplaintFiled }) {
                 autoPlay
                 muted
                 playsInline
-                className={active ? 'w-full h-auto block' : 'hidden'}
+                onLoadStart={() => { if (mode === 'video') { setVideoStatus('loading'); setVideoProgress(0) } }}
+                onProgress={handleVideoProgress}
+                onLoadedMetadata={handleVideoProgress}
+                onCanPlay={handleVideoReady}
+                onError={handleVideoError}
+                className={active && !(mode === 'video' && videoStatus === 'error') ? 'w-full h-auto block' : 'hidden'}
               />
               {active && imageWidth > 0 && detections.map((det, index) => {
                 const [left, top, right, bottom] = det.xyxy
@@ -474,6 +586,27 @@ export function LiveScanner({ existingComplaints = [], onComplaintFiled }) {
               </label>
             </div>
 
+            {mode === 'video' && videoFile && (
+              <div className="rounded-xl border border-border p-3 text-xs text-text-secondary space-y-2">
+                <p className="truncate">
+                  {videoFile.name} ({formatBytes(videoFile.size)}) · {videoStatus}
+                </p>
+                {videoStatus === 'loading' && (
+                  <ProgressBar value={videoProgress ?? 0} label={`Loading ${videoFile.name}`} />
+                )}
+                <button type="button" onClick={discardVideo} className="btn-ghost text-xs">
+                  Remove video
+                </button>
+              </div>
+            )}
+            {uploadProgress !== null && (
+              <div className="rounded-xl border border-border p-3">
+                <ProgressBar
+                  value={uploadProgress}
+                  label={uploadProgress === 100 ? 'Processing on the server…' : 'Uploading evidence…'}
+                />
+              </div>
+            )}
             <div className="rounded-xl border border-border p-3 text-xs text-text-secondary space-y-1">
               <p className="flex items-center gap-1.5">
                 <MapPin className="h-3.5 w-3.5" />
@@ -504,7 +637,8 @@ export function LiveScanner({ existingComplaints = [], onComplaintFiled }) {
               <AlertTriangle className="h-4 w-4 text-warm-500 shrink-0 mt-0.5" />
               <p>
                 Detection can be wrong. Check each garbage frame before confirming a complaint.
-                Road cracks are shown in amber and are never filed automatically.
+                Amber boxes - road cracks, people and vehicles - are shown for context
+                and are never filed automatically.
               </p>
             </div>
           </div>

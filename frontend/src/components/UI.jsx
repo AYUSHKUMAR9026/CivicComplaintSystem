@@ -559,6 +559,46 @@ export function Skeleton({ className = '', variant = 'text', width, height, ...p
   )
 }
 
+// `value` of null renders an indeterminate bar, for work whose size is unknown.
+export function ProgressBar({ value = null, label, hint, variant = 'primary', className = '' }) {
+  const determinate = typeof value === 'number' && Number.isFinite(value)
+  const pct = determinate ? Math.min(100, Math.max(0, Math.round(value))) : null
+  const fills = {
+    primary: 'bg-primary-500',
+    success: 'bg-emerald-500',
+    danger: 'bg-red-500',
+  }
+
+  return (
+    <div className={classNames('w-full', className)}>
+      {(label || determinate) && (
+        <div className="flex items-center justify-between mb-1.5 gap-2">
+          {label && <span className="text-xs font-medium text-text-primary truncate">{label}</span>}
+          {determinate && <span className="text-xs font-mono text-text-secondary shrink-0">{pct}%</span>}
+        </div>
+      )}
+      <div
+        className="h-1.5 w-full rounded-full bg-surface-hover/70 overflow-hidden"
+        role="progressbar"
+        aria-label={label || 'Progress'}
+        aria-valuenow={determinate ? pct : undefined}
+        aria-valuemin={determinate ? 0 : undefined}
+        aria-valuemax={determinate ? 100 : undefined}
+      >
+        <div
+          className={classNames(
+            'h-full rounded-full transition-[width] duration-300 ease-out',
+            fills[variant] || fills.primary,
+            determinate ? '' : 'w-1/3 animate-indeterminate-bar'
+          )}
+          style={determinate ? { width: `${pct}%` } : undefined}
+        />
+      </div>
+      {hint && <p className="mt-1.5 text-xs text-text-secondary">{hint}</p>}
+    </div>
+  )
+}
+
 export function EmptyState({ icon, title, description, action, className = '' }) {
   return (
     <div className={classNames('flex flex-col items-center justify-center py-16 px-4 text-center', className)}>
