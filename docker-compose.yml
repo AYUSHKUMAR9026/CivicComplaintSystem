@@ -56,6 +56,12 @@ services:
       ROBOFLOW_MODEL_ID: ${ROBOFLOW_MODEL_ID:-potholes-scbcq/1}
       ROBOFLOW_GARBAGE_MODEL_ID: ${ROBOFLOW_GARBAGE_MODEL_ID:-garbage-d6vgh/1}
       ROBOFLOW_API_URL: ${ROBOFLOW_API_URL:-https://serverless.roboflow.com}
+      ROBOFLOW_HUMAN_MODEL_ID: ${ROBOFLOW_HUMAN_MODEL_ID:-humans-v0nq1/1}
+      ROBOFLOW_CAR_MODEL_ID: ${ROBOFLOW_CAR_MODEL_ID:-cars-blxk2/2}
+      ROBOFLOW_POTHOLE_KW_MODEL_ID: ${ROBOFLOW_POTHOLE_KW_MODEL_ID:-kuwait-potholes/1}
+      ROBOFLOW_POTHOLE_ALT_MODEL_ID: ${ROBOFLOW_POTHOLE_ALT_MODEL_ID:-potholes-detection-j3w8s/1}
+      # Each kind is one billed hosted call per frame; trim to cut spend.
+      ROBOFLOW_SCAN_KINDS: ${ROBOFLOW_SCAN_KINDS:-road,garbage,human,car,pothole_kw,pothole_alt}
     ports:
       - "127.0.0.1:8001:8001"
     restart: unless-stopped

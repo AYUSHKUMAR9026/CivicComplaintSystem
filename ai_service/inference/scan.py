@@ -2,13 +2,15 @@
 from __future__ import annotations
 
 from concurrent.futures import ThreadPoolExecutor
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import numpy as np
 
 from ai_service.config.settings import SCAN_KINDS
-from ai_service.inference.detector import Detector, detections as coco_detections
 from ai_service.inference.roboflow_detector import RoboflowDetector, RoboflowError
+
+if TYPE_CHECKING:  # pragma: no cover - import would pull in torch at runtime
+    from ai_service.inference.detector import Detector
 
 # The road suggestion may be auto-filed after a countdown. Garbage suggestions
 # require human review because the current model also detects non-waste objects.
@@ -93,6 +95,9 @@ class CivicScanner:
         """Person boxes from the local COCO model, where "person" is reliable."""
         if self.person_detector is None:
             return []
+        # Imported here so the hosted image, which has no torch, can still start.
+        from ai_service.inference.detector import detections as coco_detections
+
         try:
             result = self.person_detector.predict(image, confidence=PERSON_CONFIDENCE)
         except (ValueError, RuntimeError):

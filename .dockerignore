@@ -8,3 +8,9 @@ backup_civic_db.sql
 ai_service/datasets
 ai_service/runs
 ai_service/weights
+
+# Local toolchain and caches. ai_service/.python is a uv-managed Windows
+# CPython whose symlinks the build context cannot read, which fails the build.
+ai_service/.python
+ai_service/.cache
+ai_service/.ultralytics
