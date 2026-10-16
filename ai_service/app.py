@@ -5,8 +5,8 @@ from ai_service.config.settings import (
     ROBOFLOW_CONFIDENCE,
     ROBOFLOW_GARBAGE_MODEL_ID,
     ROBOFLOW_MODEL_ID,
+    WEIGHTS,
 )
-from ai_service.inference.detector import Detector, detections
 from ai_service.inference.roboflow_detector import RoboflowDetector, RoboflowError
 from ai_service.inference.scan import CivicScanner
 
@@ -21,7 +21,12 @@ MAX_PIXELS = 20_000_000
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    app.state.detector = Detector()
+    # The Compose scanner uses hosted civic models and does not need local
+    # YOLO weights. Keep the standalone COCO endpoint when weights are present.
+    app.state.detector = None
+    if WEIGHTS.is_file():
+        from ai_service.inference.detector import Detector
+        app.state.detector = Detector()
     # The hosted detector needs an API key. Keep startup working without one so
     # the local COCO endpoint stays usable; /detect/road then reports why.
     try:
@@ -60,8 +65,8 @@ async def read_upload(file: UploadFile) -> np.ndarray:
 def health():
     return {
         "status": "ok",
-        "model": "yolo11n.pt",
-        "device": app.state.detector.device,
+        "model": "yolo11n.pt" if app.state.detector else None,
+        "device": app.state.detector.device if app.state.detector else None,
         "road_model": {
             "model_id": ROBOFLOW_MODEL_ID,
             "garbage_model_id": ROBOFLOW_GARBAGE_MODEL_ID,
@@ -74,6 +79,9 @@ def health():
 
 @app.post("/detect")
 async def detect(file: UploadFile = File(...)):
+    if app.state.detector is None:
+        raise HTTPException(503, "Local YOLO model is not installed on this service")
+    from ai_service.inference.detector import detections
     image = await read_upload(file)
     result = await run_in_threadpool(app.state.detector.predict, image)
     return {

@@ -208,10 +208,10 @@ export function PublicFeedPage() {
       {/* Community Location Banner */}
       {isAuthenticated && (
         user?.latitude == null || user?.longitude == null ? (
-          <Card className="mb-6 border-amber-500/30 bg-amber-500/10">
+          <Card className="mb-6 border-warm-500/30 bg-warm-500/10">
             <CardContent className="p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <div className="flex items-center gap-3">
-                <div className="p-2.5 rounded-xl bg-amber-500/20 text-amber-300 shrink-0">
+                <div className="p-2.5 rounded-xl bg-warm-500/20 text-warm-300 shrink-0">
                   <MapPin className="h-6 w-6" />
                 </div>
                 <div>
@@ -386,8 +386,8 @@ function PublicComplaintCard({ complaint, user, onUpvote, upvoting, isAuthentica
   const statusStep = STATUS_ORDER.indexOf(complaint.status || 'pending')
 
   const progressColors = {
-    0: 'bg-amber-500',
-    1: 'bg-blue-500',
+    0: 'bg-warm-500',
+    1: 'bg-accent-500',
     2: 'bg-emerald-500',
   }
 

@@ -17,7 +17,7 @@ const MAX_BYTES = 10 * 1024 * 1024
 
 function confidenceTone(value) {
   if (value >= 0.5) return 'bg-emerald-500'
-  if (value >= 0.3) return 'bg-amber-500'
+  if (value >= 0.3) return 'bg-warm-500'
   return 'bg-rose-500'
 }
 
@@ -171,7 +171,7 @@ export function DetectionDemoPage() {
                           onMouseEnter={() => setHovered(index)}
                           onMouseLeave={() => setHovered(null)}
                           className={`absolute border-2 transition-all ${
-                            det.is_pothole ? 'border-rose-500' : 'border-amber-400'
+                            det.is_pothole ? 'border-rose-500' : 'border-warm-400'
                           } ${active ? 'ring-2 ring-white/70' : ''}`}
                           style={{
                             left: `${(left / imageWidth) * 100}%`,
@@ -182,7 +182,7 @@ export function DetectionDemoPage() {
                         >
                           <span
                             className={`absolute -top-6 left-0 whitespace-nowrap px-1.5 py-0.5 text-xs font-semibold text-white rounded ${
-                              det.is_pothole ? 'bg-rose-500' : 'bg-amber-500'
+                              det.is_pothole ? 'bg-rose-500' : 'bg-warm-500'
                             }`}
                           >
                             {det.class_name} {(det.confidence * 100).toFixed(0)}%
@@ -334,7 +334,7 @@ export function DetectionDemoPage() {
                 </div>
               </dl>
               <div className="flex items-start gap-2 mt-3 pt-3 border-t border-border">
-                <AlertTriangle className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
+                <AlertTriangle className="h-4 w-4 text-warm-500 shrink-0 mt-0.5" />
                 <p className="text-xs text-text-secondary">
                   Trained on the RDD2022 road survey dataset. Only <strong>D40</strong> is a pothole;
                   D00/D10/D20 are crack types shown in amber. It detects road surface damage only —

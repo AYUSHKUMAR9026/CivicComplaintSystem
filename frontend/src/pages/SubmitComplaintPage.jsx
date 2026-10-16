@@ -1,27 +1,17 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useAuth } from '../context/AuthContext'
-import { complaintAPI, geocodeAPI } from '../services/api'
+import { complaintAPI } from '../services/api'
 import { useForm } from '../hooks/useForm'
 import { Button, Input, Textarea, Card, CardContent, Alert, Badge } from '../components/UI'
 import { Camera, X, CheckCircle2, ArrowRight, MapPin, Search, Loader2, Sparkles } from 'lucide-react'
 import { classNames, formatErrorMessage, formatNominatimAddress, fetchGeocodeLocations } from '../utils/helpers'
 import { MapPicker } from '../components/MapPicker'
 
-const CATEGORIES = [
-  { value: 1, label: 'Pothole / Road Damage', icon: 'road' },
-  { value: 2, label: 'Garbage / Waste', icon: 'trash-2' },
-  { value: 3, label: 'Water Leakage', icon: 'droplets' },
-  { value: 4, label: 'Streetlight Issue', icon: 'lamp' },
-  { value: 5, label: 'Sewage Overflow', icon: 'alert-triangle' },
-  { value: 6, label: 'Traffic Signal', icon: 'traffic-light' },
-  { value: 7, label: 'Footpath / Sidewalk', icon: 'footprints' },
-  { value: 8, label: 'Drainage / Waterlogging', icon: 'wind' },
-]
-
 export function SubmitComplaintPage() {
   const navigate = useNavigate()
-  const { user } = useAuth()
+  const [categories, setCategories] = useState([])
+  const [categoriesLoading, setCategoriesLoading] = useState(true)
+  const [categoriesError, setCategoriesError] = useState('')
   const [previewImages, setPreviewImages] = useState([])
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
@@ -36,6 +26,22 @@ export function SubmitComplaintPage() {
   const searchTimeoutRef = useRef(null)
   const locationContainerRef = useRef(null)
 
+  const loadCategories = async () => {
+    setCategoriesLoading(true)
+    setCategoriesError('')
+    try {
+      const response = await complaintAPI.categories()
+      setCategories(Array.isArray(response.data) ? response.data : [])
+    } catch (err) {
+      setCategories([])
+      setCategoriesError(formatErrorMessage(err, 'Could not load complaint categories.'))
+    } finally {
+      setCategoriesLoading(false)
+    }
+  }
+
+  useEffect(() => { loadCategories() }, [])
+
   const { values, errors, handleChange, handleBlur, handleSubmit, setFieldValue } = useForm({
     initialValues: {
       description: '',
@@ -49,7 +55,7 @@ export function SubmitComplaintPage() {
       const errs = {}
       if (!values.description.trim()) errs.description = 'Description is required'
       else if (values.description.length < 20) errs.description = 'Description must be at least 20 characters'
-      if (!values.category_id) errs.category_id = 'Please select a category'
+      if (!categories.some((category) => category.id === values.category_id)) errs.category_id = 'Please select an available category'
       if (!values.location.trim()) errs.location = 'Please enter a location'
       return errs
     },
@@ -240,14 +246,14 @@ export function SubmitComplaintPage() {
             <CardContent className="p-5">
               <h2 className="text-heading-sm font-semibold text-text-primary mb-4">What type of issue?</h2>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                {CATEGORIES.map((cat) => (
+                {categories.map((cat) => (
                   <button
-                    key={cat.value}
+                    key={cat.id}
                     type="button"
-                    onClick={() => setFieldValue('category_id', cat.value)}
+                    onClick={() => setFieldValue('category_id', cat.id)}
                     className={classNames(
                       'relative p-4 rounded-button border-2 transition-all duration-200 text-left',
-                      values.category_id === cat.value
+                      values.category_id === cat.id
                         ? 'border-primary-500 bg-primary-500/10 shadow-glow-primary'
                         : 'border-border-strong hover:border-primary-500/30 hover:bg-surface-hover'
                     )}
@@ -255,18 +261,25 @@ export function SubmitComplaintPage() {
                     <div className="flex items-center gap-3">
                       <div className={classNames(
                         'w-10 h-10 rounded-lg flex items-center justify-center',
-                        values.category_id === cat.value ? 'bg-primary-500' : 'bg-surface-hover/50'
+                        values.category_id === cat.id ? 'bg-primary-500' : 'bg-surface-hover/50'
                       )}>
-                        <CategoryIcon name={cat.icon} className={classNames('h-5 w-5', values.category_id === cat.value ? 'text-white' : 'text-text-secondary')} />
+                        <CategoryIcon name={cat.icon} className={classNames('h-5 w-5', values.category_id === cat.id ? 'text-white' : 'text-text-secondary')} />
                       </div>
-                      <span className="text-body-sm font-medium text-text-primary">{cat.label}</span>
+                      <span className="text-body-sm font-medium text-text-primary">{cat.display_name}</span>
                     </div>
-                    {values.category_id === cat.value && (
+                    {values.category_id === cat.id && (
                       <CheckCircle2 className="absolute top-2 right-2 h-5 w-5 text-primary-500" />
                     )}
                   </button>
                 ))}
               </div>
+              {categoriesLoading && <p className="mt-3 text-body-sm text-text-secondary">Loading categories…</p>}
+              {!categoriesLoading && (categoriesError || categories.length === 0) && (
+                <div className="mt-3 flex items-center gap-3 text-body-sm text-red-400">
+                  <span>{categoriesError || 'No active complaint categories are available.'}</span>
+                  <Button type="button" variant="secondary" size="sm" onClick={loadCategories}>Retry</Button>
+                </div>
+              )}
               {errors.category_id && (
                 <p className="mt-2 text-body-sm text-red-600" role="alert">{errors.category_id}</p>
               )}
@@ -358,7 +371,7 @@ export function SubmitComplaintPage() {
                           onClick={() => handleSelectLocationSuggestion(item)}
                           className="w-full text-left p-3 hover:bg-surface-hover transition-colors flex items-start gap-2.5 group"
                         >
-                          <div className="p-1.5 rounded-lg bg-primary-500/10 text-primary-400 group-hover:bg-primary-500 group-hover:text-white transition-colors shrink-0 mt-0.5">
+                          <div className="p-1.5 rounded-lg bg-primary-500/10 text-primary-400 group-hover:bg-primary-500 group-hover:text-text-inverse transition-colors shrink-0 mt-0.5">
                             <MapPin className="h-4 w-4" />
                           </div>
                           <div className="flex-1 min-w-0">
@@ -484,7 +497,7 @@ export function SubmitComplaintPage() {
 
           {/* Submit */}
           <div className="flex gap-3">
-            <Button type="submit" className="flex-1" size="lg" loading={submitting} disabled={submitting}>
+            <Button type="submit" className="flex-1" size="lg" loading={submitting} disabled={submitting || categoriesLoading || categories.length === 0}>
               Submit Complaint
               <ArrowRight className="h-4 w-4" />
             </Button>
@@ -502,12 +515,16 @@ function CategoryIcon({ name, className }) {
   const icons = {
     road: RoadIcon,
     'trash-2': TrashIcon,
+    trash: TrashIcon,
     droplets: DropletsIcon,
+    water: DropletsIcon,
     lamp: LampIcon,
+    lightbulb: LampIcon,
     'alert-triangle': AlertTriangleIcon,
     'traffic-light': TrafficLightIcon,
     footprints: FootprintsIcon,
     wind: WindIcon,
+    droplet: DropletsIcon,
   }
   const Icon = icons[name] || AlertCircleIcon
   return <Icon className={className} />

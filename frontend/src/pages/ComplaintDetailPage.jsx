@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import { complaintAPI, adminAPI } from '../services/api'
+import { complaintAPI, adminAPI, resolveAssetUrl } from '../services/api'
 import { Button, Card, CardContent, Badge, StatusBadge, Alert, LoadingState, Modal, Select, Input } from '../components/UI'
 import { 
   MapPin, Clock, Info, FileText, Flag, 
@@ -462,7 +462,7 @@ export function ComplaintDetailPage() {
                 <div className="relative">
                   <div className="aspect-video rounded-card overflow-hidden bg-surface-elevated border border-border">
                     <img
-                      src={evidenceUrls[imageIndex]}
+                      src={resolveAssetUrl(evidenceUrls[imageIndex])}
                       alt={`Evidence ${imageIndex + 1}`}
                       className="w-full h-full object-cover"
                     />
@@ -533,7 +533,7 @@ export function ComplaintDetailPage() {
                     <span className={classNames(
                       'text-caption font-semibold px-2.5 py-1 rounded-full border',
                       complaint.assessment_status === 'completed' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' :
-                      complaint.assessment_status === 'provisional' ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' :
+                      complaint.assessment_status === 'provisional' ? 'bg-warm-500/10 text-warm-400 border-warm-500/20' :
                       'bg-slate-500/10 text-slate-400 border-slate-500/20'
                     )}>
                       {complaint.assessment_status === 'completed' ? 'AI Evaluated' :
@@ -560,11 +560,11 @@ export function ComplaintDetailPage() {
                 )}
 
                 {complaint.needs_human_review && (
-                  <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-start gap-2.5 text-amber-300 text-body-sm">
-                    <AlertTriangle className="h-4 w-4 text-amber-400 shrink-0 mt-0.5" />
+                  <div className="p-3 rounded-xl bg-warm-500/10 border border-warm-500/30 flex items-start gap-2.5 text-warm-300 text-body-sm">
+                    <AlertTriangle className="h-4 w-4 text-warm-400 shrink-0 mt-0.5" />
                     <div>
-                      <strong className="font-semibold text-amber-300">Awaiting Admin Verification</strong>
-                      <p className="text-xs text-amber-300/80 mt-0.5">Vague evidence or potential safety risk flagged for human triage.</p>
+                      <strong className="font-semibold text-warm-300">Awaiting Admin Verification</strong>
+                      <p className="text-xs text-warm-300/80 mt-0.5">Vague evidence or potential safety risk flagged for human triage.</p>
                     </div>
                   </div>
                 )}
@@ -599,7 +599,7 @@ export function ComplaintDetailPage() {
                         </span>
                       </div>
                       <div className="h-2 bg-surface-hover rounded-full overflow-hidden">
-                        <div className="h-full bg-amber-400 rounded-full transition-all" style={{ width: `${complaint.impact_score || 0}%` }} />
+                        <div className="h-full bg-warm-400 rounded-full transition-all" style={{ width: `${complaint.impact_score || 0}%` }} />
                       </div>
                     </div>
 
@@ -614,7 +614,7 @@ export function ComplaintDetailPage() {
                         </span>
                       </div>
                       <div className="h-2 bg-surface-hover rounded-full overflow-hidden">
-                        <div className="h-full bg-blue-400 rounded-full transition-all" style={{ width: `${complaint.urgency_score || 0}%` }} />
+                        <div className="h-full bg-accent-400 rounded-full transition-all" style={{ width: `${complaint.urgency_score || 0}%` }} />
                       </div>
                     </div>
 
@@ -905,7 +905,7 @@ export function ComplaintDetailPage() {
 
                       {/* Address */}
                       <div className="p-2.5 rounded-lg bg-surface-elevated/40 border border-border/60 flex items-start gap-2">
-                        <Home className="h-4 w-4 text-amber-400 shrink-0 mt-0.5" />
+                        <Home className="h-4 w-4 text-warm-400 shrink-0 mt-0.5" />
                         <div className="flex-1 min-w-0">
                           <span className="text-[10px] uppercase font-bold text-text-muted tracking-wider block">Citizen's Saved Address</span>
                           <p className="text-text-secondary text-body-sm leading-relaxed">
@@ -1057,7 +1057,7 @@ export function ComplaintDetailPage() {
                 )}
                 <div className="flex justify-between items-center pt-2">
                   <dt className="text-text-muted">Citizen Upvotes</dt>
-                  <dd className="font-bold text-amber-400 flex items-center gap-1 font-mono">
+                  <dd className="font-bold text-warm-400 flex items-center gap-1 font-mono">
                     <ThumbsUp className="h-3.5 w-3.5" />
                     {complaint.upvote_count || 0}
                   </dd>
@@ -1221,7 +1221,7 @@ export function ComplaintDetailPage() {
                   type="checkbox"
                   checked={assessmentForm.needs_human_review}
                   onChange={(e) => setAssessmentForm(prev => ({ ...prev, needs_human_review: e.target.checked }))}
-                  className="rounded border-border text-amber-500 focus:ring-amber-500/20"
+                  className="rounded border-border text-warm-500 focus:ring-warm-500/20"
                 />
                 <span>Flag for ongoing human review</span>
               </label>

@@ -66,6 +66,14 @@ def test_suggestion_picks_the_strongest_category_and_counts_it():
     assert suggestion["civic_category"] == "garbage"
     assert suggestion["count"] == 2
     assert suggestion["class_names"] == ["Garbage (type 2)", "Garbage (type 8)"]
+    assert suggestion["requires_review"] is True
+
+
+def test_pothole_suggestion_can_use_countdown():
+    suggestion = sc.suggest([
+        {"civic_category": "pothole", "confidence": 0.8, "class_name": "Pothole"}
+    ])
+    assert suggestion["requires_review"] is False
 
 
 def test_live_garbage_model_detects_a_waste_dump():

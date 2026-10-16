@@ -2,6 +2,14 @@ import axios from 'axios'
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || '/api'
 
+// Evidence paths are stored as /uploads/... by the backend. Use the backend
+// origin when the frontend and API are deployed on separate hosts.
+export function resolveAssetUrl(path) {
+  if (!path) return ''
+  const apiOrigin = new URL(API_BASE_URL, window.location.origin).origin
+  return new URL(path.startsWith('/') ? path : `/${path}`, apiOrigin).href
+}
+
 const api = axios.create({
   baseURL: API_BASE_URL,
   headers: {

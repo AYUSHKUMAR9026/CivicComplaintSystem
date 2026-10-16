@@ -1,20 +1,20 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
   <defs>
     <linearGradient id="fav-bg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stopColor="#1e1b4b" />
-      <stop offset="100%" stopColor="#0b1120" />
+      <stop offset="0%" stopColor="#192324" />
+      <stop offset="100%" stopColor="#080c0d" />
     </linearGradient>
     <linearGradient id="fav-shield" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stopColor="#818cf8" />
-      <stop offset="100%" stopColor="#6366f1" />
+      <stop offset="0%" stopColor="#88e9dc" />
+      <stop offset="100%" stopColor="#3bc7ba" />
     </linearGradient>
     <linearGradient id="fav-pulse" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stopColor="#38bdf8" />
-      <stop offset="50%" stopColor="#34d399" />
-      <stop offset="100%" stopColor="#818cf8" />
+      <stop offset="0%" stopColor="#75c9e7" />
+      <stop offset="50%" stopColor="#65dece" />
+      <stop offset="100%" stopColor="#dfb65c" />
     </linearGradient>
   </defs>
-  <rect width="32" height="32" rx="8" fill="url(#fav-bg)" stroke="#6366f1" stroke-width="1" stroke-opacity="0.3" />
+  <rect width="32" height="32" rx="8" fill="url(#fav-bg)" stroke="#65dece" stroke-width="1" stroke-opacity="0.3" />
   <!-- Shield outline -->
   <path
     d="M16 4.5L7.5 8.2V14.5C7.5 20.2 11.2 25.2 16 27C20.8 25.2 24.5 20.2 24.5 14.5V8.2L16 4.5Z"
@@ -32,5 +32,5 @@
     stroke-linejoin="round"
     fill="none"
   />
-  <circle cx="16" cy="9.2" r="1.5" fill="#818cf8" />
+  <circle cx="16" cy="9.2" r="1.5" fill="#dfb65c" />
 </svg>

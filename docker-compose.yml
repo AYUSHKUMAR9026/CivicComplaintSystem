@@ -36,6 +36,7 @@ services:
       ENABLE_EMAIL_NOTIFICATIONS: "true"
       SQL_ECHO: "false"
       ENVIRONMENT: ${ENVIRONMENT:-production}
+      AI_SERVICE_URL: http://ai-service:8001
     volumes:
       - ./backend/uploads:/app/uploads
     ports:
@@ -43,6 +44,20 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+    restart: unless-stopped
+
+  ai-service:
+    build:
+      context: .
+      dockerfile: ai_service/Dockerfile
+    container_name: civic-ai-service
+    environment:
+      ROBOFLOW_API_KEY: ${ROBOFLOW_API_KEY:-}
+      ROBOFLOW_MODEL_ID: ${ROBOFLOW_MODEL_ID:-potholes-scbcq/1}
+      ROBOFLOW_GARBAGE_MODEL_ID: ${ROBOFLOW_GARBAGE_MODEL_ID:-garbage-d6vgh/1}
+      ROBOFLOW_API_URL: ${ROBOFLOW_API_URL:-https://serverless.roboflow.com}
+    ports:
+      - "127.0.0.1:8001:8001"
     restart: unless-stopped
 
   frontend:

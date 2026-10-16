@@ -90,17 +90,30 @@ civic-complaint-system/
 cd civic-complaint-system
 
 # Copy environment files
+cp .env.example .env
 cp backend/.env.example backend/.env
-# Edit backend/.env with your settings
+# Edit .env and backend/.env with your settings
 
 # Start all services
 docker-compose up -d
 
+# For a new database, load the initial departments and categories once
+docker compose exec backend python -m db.seed
+
 # Access:
-# Frontend: http://localhost:3000
+# Frontend: http://localhost:3005
 # Backend API: http://localhost:8000
 # API Docs: http://localhost:8000/docs
 ```
+
+The live scanner uses the `ai-service` container. Set `ROBOFLOW_API_KEY` in the
+repository-root `.env` before starting Compose. The backend forwards detection
+requests to that container. Browser camera and location access require HTTPS or
+`localhost`; the hosted models also require network access. A signed-in user can
+check scanner availability at `GET /api/detect/health`.
+Garbage detections require the citizen to inspect the captured frame and confirm
+before filing. The current hosted model has produced false positives, so its
+accuracy needs labeled local images before automatic garbage filing is enabled.
 
 ### Manual Setup
 
@@ -128,6 +141,10 @@ python -m db.seed
 # Run server
 uvicorn main:app --reload --host 0.0.0.0 --port 8000
 ```
+
+For manual live scanning, start `ai_service.app` on port 8001 using the setup in
+[ai_service/README.md](ai_service/README.md), set `ROBOFLOW_API_KEY` in the
+repository-root `.env`, and point backend `AI_SERVICE_URL` to that service.
 
 #### Frontend
 ```bash

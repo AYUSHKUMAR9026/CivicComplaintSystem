@@ -1,13 +1,13 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none" width="32" height="32">
   <defs>
     <linearGradient id="logo-gradient" x1="4" y1="3" x2="28" y2="29" gradientUnits="userSpaceOnUse">
-      <stop offset="0%" stopColor="#818cf8" />
-      <stop offset="100%" stopColor="#4f46e5" />
+      <stop offset="0%" stopColor="#88e9dc" />
+      <stop offset="100%" stopColor="#3bc7ba" />
     </linearGradient>
     <linearGradient id="pulse-gradient" x1="8" y1="16" x2="24" y2="16" gradientUnits="userSpaceOnUse">
-      <stop offset="0%" stopColor="#38bdf8" />
-      <stop offset="50%" stopColor="#34d399" />
-      <stop offset="100%" stopColor="#818cf8" />
+      <stop offset="0%" stopColor="#75c9e7" />
+      <stop offset="50%" stopColor="#65dece" />
+      <stop offset="100%" stopColor="#dfb65c" />
     </linearGradient>
   </defs>
   <path
@@ -29,6 +29,6 @@
     cx="16"
     cy="8.5"
     r="1.8"
-    fill="#818cf8"
+    fill="#dfb65c"
   />
 </svg>

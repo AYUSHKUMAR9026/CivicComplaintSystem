@@ -10,6 +10,7 @@
   body {
     @apply bg-surface-elevated text-text-primary antialiased font-sans;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    background-image: radial-gradient(ellipse 58% 32% at 50% -12%, rgba(101, 222, 206, 0.055), transparent 76%);
   }
 
   h1, h2, h3, h4, h5, h6 {
@@ -36,11 +37,11 @@
   }
   
   .btn-primary {
-    @apply btn bg-gradient-to-r from-primary-500 to-primary-600 text-white border border-primary-400/20 hover:from-primary-400 hover:to-primary-500 active:from-primary-600 active:to-primary-700 focus-visible:ring-primary-500 shadow-glow-primary hover:shadow-[0_0_30px_rgba(99,102,241,0.25)];
+    @apply btn bg-primary-400 text-text-inverse border border-primary-300/50 hover:bg-primary-300 active:bg-primary-500 focus-visible:ring-primary-400 shadow-glow-primary;
   }
   
   .btn-secondary {
-    @apply btn bg-surface-card text-text-primary border border-border-strong hover:bg-surface-hover hover:border-primary-500/30 active:bg-surface focus-visible:ring-primary-500;
+    @apply btn bg-surface-card text-text-primary border border-border-strong hover:bg-surface-hover hover:border-primary-400/35 active:bg-surface focus-visible:ring-primary-400 shadow-inner-glow;
   }
   
   .btn-ghost {
@@ -56,7 +57,7 @@
   }
   
   .input {
-    @apply w-full px-4 py-2.5 rounded-input border border-border-strong bg-surface-card/80 text-text-primary placeholder:text-text-muted transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500/50 disabled:bg-surface disabled:cursor-not-allowed backdrop-blur-sm;
+    @apply w-full px-4 py-2.5 rounded-input border border-border-strong bg-surface-card text-text-primary placeholder:text-text-muted transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary-400/20 focus:border-primary-400/65 disabled:bg-surface disabled:cursor-not-allowed;
   }
   
   .input-error {
@@ -68,7 +69,7 @@
   }
   
   .card {
-    @apply bg-surface-card/80 rounded-card border border-border shadow-card backdrop-blur-md overflow-hidden transition-all duration-300;
+    @apply bg-surface-card rounded-card border border-border shadow-card overflow-hidden transition-all duration-300;
   }
   
   .card-elevated {
@@ -109,7 +110,7 @@
 
   /* Gradient text utility */
   .gradient-text {
-    @apply bg-gradient-to-r from-primary-400 via-primary-300 to-accent-400 bg-clip-text text-transparent;
+    @apply bg-gradient-to-r from-primary-300 via-accent-300 to-warm-300 bg-clip-text text-transparent;
   }
 
   /* Glass morphism card effect */
@@ -120,10 +121,9 @@
   /* Mesh background */
   .bg-mesh {
     background-image: 
-      radial-gradient(at 40% 20%, rgba(99, 102, 241, 0.12) 0px, transparent 50%),
-      radial-gradient(at 80% 0%, rgba(16, 185, 129, 0.06) 0px, transparent 50%),
-      radial-gradient(at 0% 50%, rgba(245, 158, 11, 0.04) 0px, transparent 50%),
-      radial-gradient(at 60% 80%, rgba(99, 102, 241, 0.05) 0px, transparent 50%);
+      radial-gradient(at 15% 12%, rgba(101, 222, 206, 0.10) 0px, transparent 42%),
+      radial-gradient(at 85% 10%, rgba(117, 201, 231, 0.065) 0px, transparent 45%),
+      radial-gradient(at 75% 85%, rgba(223, 182, 92, 0.045) 0px, transparent 43%);
   }
 }
 
@@ -134,7 +134,7 @@
   
   .scrollbar-thin {
     scrollbar-width: thin;
-    scrollbar-color: rgba(148, 163, 184, 0.15) transparent;
+    scrollbar-color: rgba(180, 220, 213, 0.19) transparent;
   }
   
   .scrollbar-thin::-webkit-scrollbar {
@@ -147,12 +147,12 @@
   }
   
   .scrollbar-thin::-webkit-scrollbar-thumb {
-    background-color: rgba(148, 163, 184, 0.15);
+    background-color: rgba(180, 220, 213, 0.19);
     border-radius: 3px;
   }
   
   .scrollbar-thin::-webkit-scrollbar-thumb:hover {
-    background-color: rgba(148, 163, 184, 0.3);
+    background-color: rgba(180, 220, 213, 0.35);
   }
 }
 
@@ -184,7 +184,7 @@
   inset: 0;
   border-radius: inherit;
   padding: 1px;
-  background: linear-gradient(135deg, rgba(99, 102, 241, 0.3), rgba(16, 185, 129, 0.15), rgba(245, 158, 11, 0.1));
+  background: linear-gradient(135deg, rgba(101, 222, 206, 0.35), rgba(117, 201, 231, 0.2), rgba(223, 182, 92, 0.2));
   -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
@@ -193,16 +193,16 @@
 
 /* Native select option dark theme contrast guarantee across all browsers */
 select option {
-  background-color: #141e35 !important;
-  color: #f1f5f9 !important;
+  background-color: #11191a !important;
+  color: #eef8f5 !important;
 }
 
 select option:checked {
-  background-color: #3b82f6 !important;
-  color: #ffffff !important;
+  background-color: #20877f !important;
+  color: #eef8f5 !important;
 }
 
 select option:hover {
-  background-color: #1e293b !important;
-  color: #ffffff !important;
+  background-color: #1b2627 !important;
+  color: #eef8f5 !important;
 }

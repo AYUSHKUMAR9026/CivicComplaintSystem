@@ -20,8 +20,8 @@ MAX_BYTES = 10 * 1024 * 1024
 REQUEST_TIMEOUT = float(os.getenv("AI_SERVICE_TIMEOUT", "45"))
 
 UNAVAILABLE = (
-    "Detection service is not running. Start it with: "
-    "ai_service/.venv/Scripts/python.exe -m uvicorn ai_service.app:app --port 8001"
+    "Detection service is not running. Start the ai-service container with "
+    "docker compose up -d ai-service, or run ai_service.app on port 8001."
 )
 
 

@@ -1,0 +1,7 @@
+fastapi==0.119.0
+uvicorn==0.38.0
+python-multipart==0.0.20
+opencv-python==4.12.0.88
+numpy==2.2.6
+inference-sdk>=1.5.0,<2
+python-dotenv>=1.0.0

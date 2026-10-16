@@ -202,10 +202,10 @@ export function Badge({ children, variant = 'default', className = '', icon, ...
     default: 'bg-surface-hover/50 text-text-secondary border-border',
     primary: 'bg-primary-500/10 text-primary-400 border-primary-500/20',
     success: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
-    warning: 'bg-amber-500/10 text-amber-400 border-amber-500/20',
+    warning: 'bg-warm-500/10 text-warm-400 border-warm-500/20',
     danger: 'bg-red-500/10 text-red-400 border-red-500/20',
-    info: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
-    accent: 'bg-violet-500/10 text-violet-400 border-violet-500/20',
+    info: 'bg-accent-500/10 text-accent-300 border-accent-500/20',
+    accent: 'bg-warm-500/10 text-warm-300 border-warm-500/20',
   }
 
   return (
@@ -463,9 +463,9 @@ export function Modal({ isOpen, onClose, title, children, className = '', size =
 
 export function Alert({ variant = 'info', title, children, className = '', onClose, dismissible = false }) {
   const variants = {
-    info: 'bg-blue-500/10 border-blue-500/20 text-blue-300',
+    info: 'bg-accent-500/10 border-accent-500/20 text-accent-300',
     success: 'bg-emerald-500/10 border-emerald-500/20 text-emerald-300',
-    warning: 'bg-amber-500/10 border-amber-500/20 text-amber-300',
+    warning: 'bg-warm-500/10 border-warm-500/20 text-warm-300',
     danger: 'bg-red-500/10 border-red-500/20 text-red-300',
   }
 

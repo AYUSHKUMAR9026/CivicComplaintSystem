@@ -162,10 +162,7 @@ export function truncate(str, length = 100) {
 }
 
 export function generateAvatarColor(name) {
-  const colors = [
-    'bg-primary-500', 'bg-emerald-500', 'bg-amber-500', 'bg-rose-500',
-    'bg-violet-500', 'bg-cyan-500', 'bg-indigo-500', 'bg-orange-500',
-  ]
+  const colors = ['#20877f', '#2c7292', '#856327', '#1c6763']
   let hash = 0
   for (let i = 0; i < name.length; i++) {
     hash = name.charCodeAt(i) + ((hash << 5) - hash)

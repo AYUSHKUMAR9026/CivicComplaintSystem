@@ -19,17 +19,6 @@ import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Toolti
 
 const STATUS_ORDER = ['pending', 'working', 'completed']
 
-export const CITIZEN_CATEGORIES = [
-  { id: 1, name: 'pothole', display_name: 'Pothole / Road Damage' },
-  { id: 2, name: 'garbage', display_name: 'Garbage / Waste' },
-  { id: 3, name: 'water_leakage', display_name: 'Water Leakage' },
-  { id: 4, name: 'streetlight', display_name: 'Streetlight Issue' },
-  { id: 5, name: 'sewage_overflow', display_name: 'Sewage Overflow' },
-  { id: 6, name: 'traffic_signal', display_name: 'Traffic Signal' },
-  { id: 7, name: 'footpath', display_name: 'Footpath / Sidewalk' },
-  { id: 8, name: 'drainage', display_name: 'Drainage / Waterlogging' },
-]
-
 export function AdminDashboard() {
   const { user, isAdmin, isDepartment } = useAuth()
   const navigate = useNavigate()
@@ -49,7 +38,7 @@ export function AdminDashboard() {
   const [showFilterBar, setShowFilterBar] = useState(false)
   const [page, setPage] = useState(1)
   const [total, setTotal] = useState(0)
-  const [categories, setCategories] = useState(CITIZEN_CATEGORIES)
+  const [categories, setCategories] = useState([])
   const [departments, setDepartments] = useState([])
   const pageSize = 20
   const [showAssignModal, setShowAssignModal] = useState(false)
@@ -148,22 +137,10 @@ export function AdminDashboard() {
 
   const fetchCategories = async () => {
     try {
-      if (!isAdmin) {
-        setCategories(CITIZEN_CATEGORIES)
-        return
-      }
-      const response = await adminAPI.categories()
-      if (Array.isArray(response.data) && response.data.length > 0) {
-        const filtered = response.data.filter(cat => 
-          !cat.name?.startsWith('pot_') &&
-          CITIZEN_CATEGORIES.some(c => c.id === cat.id || c.name === cat.name)
-        )
-        setCategories(filtered.length > 0 ? filtered : CITIZEN_CATEGORIES)
-      } else {
-        setCategories(CITIZEN_CATEGORIES)
-      }
+      const response = await (isAdmin ? adminAPI.categories() : complaintAPI.categories())
+      setCategories(Array.isArray(response.data) ? response.data : [])
     } catch (err) {
-      setCategories(CITIZEN_CATEGORIES)
+      setCategories([])
     }
   }
 
@@ -414,11 +391,11 @@ export function AdminDashboard() {
             title="Awaiting Review"
             value={stats.needs_review_count || 0}
             icon={AlertTriangle}
-            gradient="from-amber-500/20 to-amber-500/5"
-            iconColor="text-amber-400"
-            borderGlow="border-amber-500/20"
+            gradient="from-warm-500/20 to-warm-500/5"
+            iconColor="text-warm-400"
+            borderGlow="border-warm-500/20"
             trend="Needs Admin Triage"
-            trendColor="text-amber-400"
+            trendColor="text-warm-400"
           />
           <StatCard
             title="Resolved This Week"
@@ -434,9 +411,9 @@ export function AdminDashboard() {
             title="Avg Resolution Time"
             value={`${stats.avg_resolution_days} days`}
             icon={Zap}
-            gradient="from-amber-500/20 to-amber-500/5"
-            iconColor="text-amber-400"
-            borderGlow="border-amber-500/20"
+            gradient="from-warm-500/20 to-warm-500/5"
+            iconColor="text-warm-400"
+            borderGlow="border-warm-500/20"
             trend="Target: < 7 days"
             trendColor="text-text-muted"
           />
@@ -462,7 +439,7 @@ export function AdminDashboard() {
                       innerRadius={55}
                       outerRadius={95}
                       paddingAngle={2}
-                      stroke="rgba(20, 30, 53, 0.8)"
+                      stroke="rgba(17, 25, 26, 0.9)"
                       strokeWidth={2}
                       dataKey="count"
                       nameKey="category"
@@ -473,7 +450,7 @@ export function AdminDashboard() {
                         <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
                       ))}
                     </Pie>
-                    <Tooltip contentStyle={{ backgroundColor: '#141e35', borderColor: 'rgba(148, 163, 184, 0.12)', borderRadius: '12px', fontSize: '12px', color: '#f1f5f9' }} formatter={(value) => [value, 'complaints']} />
+                    <Tooltip contentStyle={{ backgroundColor: '#11191a', borderColor: 'rgba(180, 220, 213, 0.12)', borderRadius: '12px', fontSize: '12px', color: '#eef8f5' }} formatter={(value) => [value, 'complaints']} />
                   </PieChart>
                 </ResponsiveContainer>
               </div>
@@ -489,11 +466,11 @@ export function AdminDashboard() {
               <div className="h-64">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={stats.by_status} layout="vertical">
-                    <CartesianGrid strokeDasharray="2 2" stroke="rgba(148, 163, 184, 0.08)" vertical={false} />
-                    <XAxis type="number" stroke="rgba(148, 163, 184, 0.12)" tick={{ fill: '#64748b', fontSize: 11 }} />
-                    <YAxis dataKey="status" type="category" width={120} stroke="rgba(148, 163, 184, 0.12)" tick={{ fill: '#94a3b8', fontSize: 11 }} />
-                    <Tooltip contentStyle={{ backgroundColor: '#141e35', borderColor: 'rgba(148, 163, 184, 0.12)', borderRadius: '12px', fontSize: '12px', color: '#f1f5f9' }} formatter={(value) => [value, 'complaints']} />
-                    <Bar dataKey="count" fill="#6366f1" radius={[0, 6, 6, 0]} maxBarWidth={32} />
+                    <CartesianGrid strokeDasharray="2 2" stroke="rgba(180, 220, 213, 0.08)" vertical={false} />
+                    <XAxis type="number" stroke="rgba(180, 220, 213, 0.12)" tick={{ fill: '#78908a', fontSize: 11 }} />
+                    <YAxis dataKey="status" type="category" width={120} stroke="rgba(180, 220, 213, 0.12)" tick={{ fill: '#a9beb9', fontSize: 11 }} />
+                    <Tooltip contentStyle={{ backgroundColor: '#11191a', borderColor: 'rgba(180, 220, 213, 0.12)', borderRadius: '12px', fontSize: '12px', color: '#eef8f5' }} formatter={(value) => [value, 'complaints']} />
+                    <Bar dataKey="count" fill="#65dece" radius={[0, 6, 6, 0]} maxBarWidth={32} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
@@ -538,7 +515,7 @@ export function AdminDashboard() {
             <Filter className="h-4 w-4" />
             <span>Filter</span>
             {activeFilterCount > 0 && (
-              <span className={`px-1.5 py-0.2 rounded-full text-[11px] font-bold ${showFilterBar ? 'bg-white text-primary-950' : 'bg-primary-500 text-white'}`}>
+              <span className={`px-1.5 py-0.2 rounded-full text-[11px] font-bold ${showFilterBar ? 'bg-white text-primary-950' : 'bg-primary-500 text-text-inverse'}`}>
                 {activeFilterCount}
               </span>
             )}
@@ -568,7 +545,7 @@ export function AdminDashboard() {
           )}
           {filters.category_id && (
             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-primary-500/15 text-primary-300 border border-primary-500/30">
-              Category: {CITIZEN_CATEGORIES.find(c => String(c.id) === String(filters.category_id))?.display_name || filters.category_id}
+              Category: {categories.find(c => String(c.id) === String(filters.category_id))?.display_name || filters.category_id}
               <button type="button" onClick={() => handleFilterChange('category_id', '')} aria-label="Remove category filter"><X className="h-3 w-3" /></button>
             </span>
           )}
@@ -673,12 +650,12 @@ export function AdminDashboard() {
               <select
                 value={filters.category_id}
                 onChange={(e) => handleFilterChange('category_id', e.target.value)}
-                className="input w-auto min-w-[170px] bg-[#141e35] text-slate-100"
+                className="input w-auto min-w-[170px] bg-[#11191a] text-slate-100"
                 aria-label="Filter by category"
               >
-                <option value="" className="bg-[#141e35] text-slate-100">All Categories</option>
-                {CITIZEN_CATEGORIES.map((cat) => (
-                  <option key={cat.id} value={cat.id} className="bg-[#141e35] text-slate-100">{cat.display_name}</option>
+                <option value="" className="bg-[#11191a] text-slate-100">All Categories</option>
+                {categories.map((cat) => (
+                  <option key={cat.id} value={cat.id} className="bg-[#11191a] text-slate-100">{cat.display_name}</option>
                 ))}
               </select>
 
@@ -686,14 +663,14 @@ export function AdminDashboard() {
                 <select
                   value={filters.department_id}
                   onChange={(e) => handleFilterChange('department_id', e.target.value)}
-                  className="input w-auto min-w-[175px] bg-[#141e35] text-slate-100"
+                  className="input w-auto min-w-[175px] bg-[#11191a] text-slate-100"
                   aria-label="Filter by department"
                 >
-                  <option value="" className="bg-[#141e35] text-slate-100">All Departments</option>
-                  <option value="unassigned" className="bg-[#141e35] text-amber-300 font-medium">Unassigned</option>
-                  <option value="assigned" className="bg-[#141e35] text-emerald-300 font-medium">All Assigned</option>
+                  <option value="" className="bg-[#11191a] text-slate-100">All Departments</option>
+                  <option value="unassigned" className="bg-[#11191a] text-warm-300 font-medium">Unassigned</option>
+                  <option value="assigned" className="bg-[#11191a] text-emerald-300 font-medium">All Assigned</option>
                   {departments.map((dept) => (
-                    <option key={dept.id} value={dept.id} className="bg-[#141e35] text-slate-100">{dept.display_name}</option>
+                    <option key={dept.id} value={dept.id} className="bg-[#11191a] text-slate-100">{dept.display_name}</option>
                   ))}
                 </select>
               )}
@@ -701,37 +678,37 @@ export function AdminDashboard() {
               <select
                 value={filters.needs_human_review}
                 onChange={(e) => handleFilterChange('needs_human_review', e.target.value)}
-                className="input w-auto min-w-[160px] bg-[#141e35] text-slate-100"
+                className="input w-auto min-w-[160px] bg-[#11191a] text-slate-100"
                 aria-label="Filter by review status"
               >
-                <option value="" className="bg-[#141e35] text-slate-100">All Review Status</option>
-                <option value="true" className="bg-[#141e35] text-slate-100">Needs Human Review</option>
-                <option value="false" className="bg-[#141e35] text-slate-100">Clear / Verified</option>
+                <option value="" className="bg-[#11191a] text-slate-100">All Review Status</option>
+                <option value="true" className="bg-[#11191a] text-slate-100">Needs Human Review</option>
+                <option value="false" className="bg-[#11191a] text-slate-100">Clear / Verified</option>
               </select>
 
-              <div className="flex items-center gap-1.5 bg-[#141e35] px-3 py-1.5 rounded-lg border border-border-strong text-slate-100">
+              <div className="flex items-center gap-1.5 bg-[#11191a] px-3 py-1.5 rounded-lg border border-border-strong text-slate-100">
                 <ArrowUpDown className="h-3.5 w-3.5 text-primary-400" />
                 <span className="text-xs text-text-muted font-medium">Sort:</span>
                 <select
                   value={filters.sort_by}
                   onChange={(e) => handleFilterChange('sort_by', e.target.value)}
-                  className="bg-[#141e35] text-slate-100 text-xs font-medium border-0 focus:ring-0 focus:outline-none cursor-pointer py-1 pr-2"
+                  className="bg-[#11191a] text-slate-100 text-xs font-medium border-0 focus:ring-0 focus:outline-none cursor-pointer py-1 pr-2"
                   aria-label="Sort by"
                 >
-                  <option value="priority_score" className="bg-[#141e35] text-slate-100">Priority Score</option>
-                  <option value="upvote_count" className="bg-[#141e35] text-slate-100">Upvotes</option>
-                  <option value="created_at" className="bg-[#141e35] text-slate-100">Date Created</option>
-                  <option value="status" className="bg-[#141e35] text-slate-100">Status</option>
+                  <option value="priority_score" className="bg-[#11191a] text-slate-100">Priority Score</option>
+                  <option value="upvote_count" className="bg-[#11191a] text-slate-100">Upvotes</option>
+                  <option value="created_at" className="bg-[#11191a] text-slate-100">Date Created</option>
+                  <option value="status" className="bg-[#11191a] text-slate-100">Status</option>
                 </select>
                 <span className="text-border-strong">|</span>
                 <select
                   value={filters.sort_order}
                   onChange={(e) => handleFilterChange('sort_order', e.target.value)}
-                  className="bg-[#141e35] text-slate-100 text-xs font-medium border-0 focus:ring-0 focus:outline-none cursor-pointer py-1 pl-1"
+                  className="bg-[#11191a] text-slate-100 text-xs font-medium border-0 focus:ring-0 focus:outline-none cursor-pointer py-1 pl-1"
                   aria-label="Sort order"
                 >
-                  <option value="desc" className="bg-[#141e35] text-slate-100">Descending</option>
-                  <option value="asc" className="bg-[#141e35] text-slate-100">Ascending</option>
+                  <option value="desc" className="bg-[#11191a] text-slate-100">Descending</option>
+                  <option value="asc" className="bg-[#11191a] text-slate-100">Ascending</option>
                 </select>
               </div>
             </div>
@@ -753,7 +730,7 @@ export function AdminDashboard() {
                 )}
                 {filters.category_id && (
                   <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-primary-500/15 text-primary-300 border border-primary-500/30">
-                    Category: {CITIZEN_CATEGORIES.find(c => String(c.id) === String(filters.category_id))?.display_name || filters.category_id}
+                    Category: {categories.find(c => String(c.id) === String(filters.category_id))?.display_name || filters.category_id}
                     <button type="button" onClick={() => handleFilterChange('category_id', '')}><X className="h-3 w-3" /></button>
                   </span>
                 )}
@@ -873,7 +850,7 @@ export function AdminDashboard() {
                             className={classNames(
                               'h-full rounded-full transition-all',
                               (complaint.priority_score || 0) >= 80 ? 'bg-rose-500' :
-                              (complaint.priority_score || 0) >= 60 ? 'bg-amber-500' :
+                              (complaint.priority_score || 0) >= 60 ? 'bg-warm-500' :
                               (complaint.priority_score || 0) >= 35 ? 'bg-primary-500' : 'bg-slate-500'
                             )}
                             style={{ width: `${Math.min(100, Math.max(0, complaint.priority_score || 0))}%` }}
@@ -881,7 +858,7 @@ export function AdminDashboard() {
                         </div>
                         <div className="flex flex-wrap gap-1">
                           {complaint.needs_human_review && (
-                            <span className="inline-flex items-center gap-0.5 text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-400 border border-amber-500/30">
+                            <span className="inline-flex items-center gap-0.5 text-[10px] font-bold px-1.5 py-0.5 rounded bg-warm-500/15 text-warm-400 border border-warm-500/30">
                               <AlertTriangle className="w-2.5 h-2.5" /> Review
                             </span>
                           )}
@@ -894,7 +871,7 @@ export function AdminDashboard() {
                       </div>
                     </td>
                     <td className="py-4 px-4">
-                      <span className="inline-flex items-center text-amber-400 font-bold text-xs bg-amber-500/10 border border-amber-500/20 px-2.5 py-1 rounded-badge w-fit gap-1">
+                      <span className="inline-flex items-center text-warm-400 font-bold text-xs bg-warm-500/10 border border-warm-500/20 px-2.5 py-1 rounded-badge w-fit gap-1">
                          <ThumbsUp className="w-3.5 h-3.5" />
                          {complaint.upvote_count || 0}
                       </span>
@@ -1206,7 +1183,7 @@ export function AdminDashboard() {
                   type="checkbox"
                   checked={assessmentForm.needs_human_review}
                   onChange={(e) => setAssessmentForm(prev => ({ ...prev, needs_human_review: e.target.checked }))}
-                  className="rounded border-border text-amber-500 focus:ring-amber-500/20"
+                  className="rounded border-border text-warm-500 focus:ring-warm-500/20"
                 />
                 <span>Keep flagged for human review</span>
               </label>
@@ -1353,7 +1330,7 @@ export function AdminDashboard() {
 
               {/* Registered Address */}
               <div className="p-3 rounded-xl bg-surface-elevated/40 border border-border/60 flex items-start gap-2.5">
-                <Home className="h-4 w-4 text-amber-400 shrink-0 mt-0.5" />
+                <Home className="h-4 w-4 text-warm-400 shrink-0 mt-0.5" />
                 <div className="flex-1 min-w-0">
                   <span className="text-[10px] uppercase font-bold text-text-muted tracking-wider block">Saved Neighborhood Address</span>
                   <p className="text-text-secondary text-body-sm leading-relaxed">
@@ -1502,7 +1479,7 @@ function StatCard({ title, value, icon: Icon, gradient, iconColor, borderGlow = 
   )
 }
 
-const CHART_COLORS = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4', '#ec4899', '#14b8a6']
+const CHART_COLORS = ['#65dece', '#dfb65c', '#75c9e7', '#29a99f', '#e8c879', '#4aadd5', '#ab7f31', '#20877f']
 
 function Icon({ name, className }) {
   const icons = {

@@ -210,8 +210,8 @@ function ComplaintCard({ complaint }) {
   const progress = ((statusStep + 1) / totalSteps) * 100
 
   const progressColors = {
-    0: 'bg-amber-500',
-    1: 'bg-blue-500',
+    0: 'bg-warm-500',
+    1: 'bg-accent-500',
     2: 'bg-emerald-500',
   }
 
@@ -229,7 +229,7 @@ function ComplaintCard({ complaint }) {
             </p>
           </div>
           <div className="flex flex-col items-end">
-            <span className="flex items-center text-amber-400 font-bold text-sm bg-amber-500/10 border border-amber-500/20 px-2.5 py-1 rounded-lg gap-1">
+            <span className="flex items-center text-warm-400 font-bold text-sm bg-warm-500/10 border border-warm-500/20 px-2.5 py-1 rounded-lg gap-1">
                <ThumbsUp className="w-4 h-4" />
                {complaint.upvote_count || 0}
             </span>

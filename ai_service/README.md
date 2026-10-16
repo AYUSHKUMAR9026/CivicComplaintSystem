@@ -8,11 +8,9 @@ Custom transfer-learning tooling is available in [training/README.md](training/R
 including a check-only CLI, explicit training/resume commands, and a Google Colab
 notebook. Training remains blocked until genuine dataset validation passes.
 
-This is an isolated experiment alongside the existing React/Vite frontend,
-FastAPI/SQLAlchemy backend, and PostgreSQL database. The backend already has
-LLM-assisted complaint assessment in `backend/complaint/assessment.py`; this
-module adds computer vision without changing that assessment, complaint routes,
-database, frontend, Docker configuration, or backend dependencies.
+This service also powers the live scanner through the backend detection proxy.
+Docker Compose runs a hosted-inference-only image without local YOLO weights;
+the standalone setup below still supports the COCO demo when weights are installed.
 
 **The pretrained `yolo11n.pt` model detects 80 COCO object categories** such as
 people, cars, and buses. It has not been custom trained to detect potholes,

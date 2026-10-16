@@ -1,0 +1,10 @@
+.git
+.env
+backend
+frontend
+backup_civic_db.sql
+**/.venv
+**/__pycache__
+ai_service/datasets
+ai_service/runs
+ai_service/weights

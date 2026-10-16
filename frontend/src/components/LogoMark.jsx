@@ -54,8 +54,7 @@ export function LogoMark({ className = 'h-5 w-5 text-white', ...props }) {
         cx="16"
         cy="8.5"
         r="1.8"
-        fill="currentColor"
-        opacity="0.9"
+        fill="#dfb65c"
       />
     </svg>
   )
@@ -76,8 +75,8 @@ export function Logo({ size = 'md', showText = true, className = '' }) {
   
   return (
     <div className={`flex items-center gap-3 ${className}`}>
-      <div className={`${s.icon} rounded-xl bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center shadow-glow-primary border border-primary-400/20`}>
-        <LogoMark className={`${s.iconInner} text-white`} />
+      <div className={`${s.icon} rounded-xl bg-gradient-to-br from-primary-300 to-primary-600 flex items-center justify-center shadow-glow-primary border border-primary-200/30`}>
+        <LogoMark className={`${s.iconInner} text-surface-elevated`} />
       </div>
       {showText && (
         <div className="flex flex-col">

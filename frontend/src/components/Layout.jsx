@@ -44,7 +44,7 @@ export function Header() {
 
   return (
     <>
-      <header className="sticky top-0 z-40 bg-surface/80 backdrop-blur-xl border-b border-border">
+      <header className="sticky top-0 z-40 bg-surface-elevated/90 backdrop-blur-xl border-b border-border shadow-[0_1px_0_rgba(255,255,255,0.02)]">
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" aria-label="Main navigation">
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
@@ -66,15 +66,15 @@ export function Header() {
                     className={({ isActive }) => classNames(
                       'flex items-center gap-2 px-3.5 py-2 rounded-button text-body-sm font-medium transition-all duration-200 relative',
                       isActive
-                        ? 'bg-primary-500/10 text-primary-400 border border-primary-500/20'
-                        : 'text-text-secondary hover:bg-surface-hover hover:text-text-primary border border-transparent'
+                        ? 'bg-surface-paper text-primary-300 border border-primary-400/20 shadow-inner-glow'
+                        : 'text-text-secondary hover:bg-surface-hover/70 hover:text-text-primary border border-transparent'
                     )}
                     aria-current={isActive ? 'page' : undefined}
                   >
                     <Icon className="h-4 w-4" aria-hidden="true" />
                     <span>{item.label}</span>
                     {isActive && (
-                      <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-6 h-0.5 bg-primary-500 rounded-full" />
+                      <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-6 h-0.5 bg-warm-400 rounded-full" />
                     )}
                   </NavLink>
                 )
@@ -89,14 +89,14 @@ export function Header() {
               <button
                 type="button"
                 onClick={() => setShowLocationModal(true)}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border border-border bg-surface-card hover:bg-surface-hover hover:border-primary-500/30 transition-all text-text-secondary hover:text-text-primary"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border border-border-strong bg-surface-card hover:bg-surface-hover hover:border-primary-400/30 transition-all text-text-secondary hover:text-text-primary"
                 title={user?.address ? `Community location: ${user.address}` : 'Set community location for 25 km feed'}
               >
-                <MapPin className={classNames('h-3.5 w-3.5', user?.latitude != null ? 'text-primary-400' : 'text-amber-400 animate-pulse')} />
+                <MapPin className={classNames('h-3.5 w-3.5', user?.latitude != null ? 'text-primary-400' : 'text-warm-400 animate-pulse')} />
                 <span className="max-w-[120px] truncate hidden sm:inline">
                   {user?.address ? truncate(user.address, 16) : 'Set Location'}
                 </span>
-                <span className="text-[10px] text-primary-400 font-mono bg-primary-500/10 px-1.5 py-0.5 rounded-full border border-primary-500/20">25 km</span>
+                <span className="text-[10px] text-warm-300 font-mono bg-warm-400/10 px-1.5 py-0.5 rounded-full border border-warm-400/20">25 km</span>
               </button>
             )}
 
@@ -109,7 +109,7 @@ export function Header() {
                   aria-expanded={userMenuOpen}
                   aria-haspopup="true"
                 >
-                  <div className={classNames('w-8 h-8 rounded-lg flex items-center justify-center font-semibold text-xs text-white ring-2 ring-primary-500/20 group-hover:ring-primary-500/40 transition-all', generateAvatarColor(user?.full_name || 'User'))}>
+                  <div className={classNames('w-8 h-8 rounded-lg flex items-center justify-center font-semibold text-xs text-surface-elevated ring-2 ring-primary-400/20 group-hover:ring-primary-400/40 transition-all', generateAvatarColor())}>
                     {getInitials(user?.full_name || 'User')}
                   </div>
                   <span className="hidden sm:block text-body-sm font-medium text-text-primary">{user?.full_name}</span>
@@ -260,22 +260,8 @@ export function Header() {
 )
 }
 
-function generateAvatarColor(name) {
-  const colors = [
-    'bg-gradient-to-br from-primary-500 to-primary-700',
-    'bg-gradient-to-br from-emerald-500 to-emerald-700',
-    'bg-gradient-to-br from-amber-500 to-amber-700',
-    'bg-gradient-to-br from-rose-500 to-rose-700',
-    'bg-gradient-to-br from-violet-500 to-violet-700',
-    'bg-gradient-to-br from-cyan-500 to-cyan-700',
-    'bg-gradient-to-br from-indigo-500 to-indigo-700',
-    'bg-gradient-to-br from-orange-500 to-orange-700',
-  ]
-  let hash = 0
-  for (let i = 0; i < name.length; i++) {
-    hash = name.charCodeAt(i) + ((hash << 5) - hash)
-  }
-  return colors[Math.abs(hash) % colors.length]
+function generateAvatarColor() {
+  return 'bg-gradient-to-br from-warm-300 to-warm-500'
 }
 
 function getInitials(name) {

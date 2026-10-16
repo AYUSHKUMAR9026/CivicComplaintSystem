@@ -491,7 +491,7 @@ export function MapPicker({ value, onChange }) {
                   onClick={() => handleSelectSuggestion(item)}
                   className="w-full text-left px-2.5 py-2 hover:bg-surface-hover transition-colors flex items-start gap-2 group"
                 >
-                  <div className="p-1 rounded bg-primary-500/10 text-primary-400 group-hover:bg-primary-500 group-hover:text-white transition-colors shrink-0 mt-0.5">
+                  <div className="p-1 rounded bg-primary-500/10 text-primary-400 group-hover:bg-primary-500 group-hover:text-text-inverse transition-colors shrink-0 mt-0.5">
                     <MapPin className="w-3 h-3" />
                   </div>
                   <div className="flex-1 min-w-0">
@@ -630,7 +630,7 @@ export function MapPicker({ value, onChange }) {
           <button
             type="button"
             onClick={toggleMaximize}
-            className="px-3 py-1.5 bg-primary-500 hover:bg-primary-600 text-white font-medium rounded-lg text-xs transition-colors shadow-sm"
+            className="px-3 py-1.5 bg-primary-500 hover:bg-primary-400 text-text-inverse font-medium rounded-lg text-xs transition-colors shadow-sm"
           >
             Confirm & Minimize View
           </button>

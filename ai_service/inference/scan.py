@@ -8,8 +8,8 @@ import numpy as np
 
 from ai_service.inference.roboflow_detector import RoboflowDetector, RoboflowError
 
-# Auto-filing acts on this, so keep it above the range where the road model
-# produced crack/pothole confusion in testing.
+# The road suggestion may be auto-filed after a countdown. Garbage suggestions
+# require human review because the current model also detects non-waste objects.
 AUTO_FILE_FLOOR = 0.50
 
 
@@ -73,4 +73,5 @@ def suggest(detections: list[dict[str, Any]]) -> dict[str, Any] | None:
         "confidence": best["confidence"],
         "count": len(same),
         "class_names": sorted({d["class_name"] for d in same}),
+        "requires_review": category == "garbage",
     }

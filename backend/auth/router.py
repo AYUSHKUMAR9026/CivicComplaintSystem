@@ -1,5 +1,6 @@
 from datetime import timedelta
 from sqlalchemy.orm import Session
+from sqlalchemy import or_
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.exc import IntegrityError
 
@@ -29,9 +30,10 @@ async def register(
 ):
     """Register a new user (citizen or admin)"""
     # Check if user exists
-    existing = db.query(User).filter(
-        (User.email == user_data.email) | (User.phone == user_data.phone)
-    ).first()
+    identifiers = [User.email == user_data.email]
+    if user_data.phone:
+        identifiers.append(User.phone == user_data.phone)
+    existing = db.query(User).filter(or_(*identifiers)).first()
     if existing:
         raise ConflictException("User with this email or phone already exists")
     
